@@ -21,20 +21,18 @@ if(len(sys.argv) < 3):
 start = str(sys.argv[1])
 end = str(sys.argv[2])
 
-os.system("sacct -P -n -T -a --start=%s --end=%s --format=jobid,submit,start,end,alloccpus,maxrss,account | grep -v '[0-9]\.' > /tmp/calc_time_dump.txt" % (start,end))
+os.system("sacct -P -n -T -a --start=%s --end=%s --format=jobid,submit,start,end,alloccpus,account | grep -v '[0-9]\.' > /tmp/calc_time_dump.txt" % (start,end))
 
 ins = open("/tmp/calc_time_dump.txt", "r")
 ins = [line.rstrip() for line in ins.readlines()]
 data = []
+
 for line in ins:
     number_strings = line.split('|') # Split the line on runs of whitespace
     data.append(number_strings)
 
-# Now sort data
-data = sorted(data, key=lambda x: x[6])
-
 # Pull out unique users
-users = set(column(data,6))
+users = set(column(data,5))
 SU_users = [0 for i in users]
 
 # Data should now have the Slurm output in lists further subdivided. Therefore, the start time is
@@ -55,9 +53,9 @@ for i in range(len(data)):
 
 	flag = 0
 	for j in users:
-		if(j == data[i][6]):
+		if(j == data[i][5]):
 			break
-		flag = flag +1
+		flag += 1
 
 	SU.append(deltaT*int(data[i][4])/3600.0)
 	SU_users[flag] += deltaT*int(data[i][4])/3600.0
