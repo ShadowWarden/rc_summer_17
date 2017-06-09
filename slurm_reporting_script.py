@@ -24,14 +24,17 @@ end = str(sys.argv[2])
 os.system("sacct -P -n -T -a --start=%s --end=%s --format=jobid,submit,start,end,alloccpus,account | grep -v '[0-9]\.' > /tmp/calc_time_dump.txt" % (start,end))
 
 ins = open("/tmp/calc_time_dump.txt", "r")
+# Get rid of trailing \n
 ins = [line.rstrip() for line in ins.readlines()]
 data = []
 
+# Seperate by |
 for line in ins:
     number_strings = line.split('|') # Split the line on runs of whitespace
     data.append(number_strings)
 
-# Pull out unique users
+# Pull out unique users and define a list of zeros where the SU consumed by each user will be
+# stored
 users = set(column(data,5))
 SU_users = [0 for i in users]
 
@@ -43,21 +46,26 @@ SU_users = [0 for i in users]
 deltaWaitT = []
 
 SU = []
-Cons = [] # Consumption by user
 for i in range(len(data)):
+	# Pull out date/Time for submit (d1), start (d2) and end (d3)
 	d1 = datetime.strptime(data[i][1], "%Y-%m-%dT%H:%M:%S")
 	d2 = datetime.strptime(data[i][2], "%Y-%m-%dT%H:%M:%S")
 	d3 = datetime.strptime(data[i][3], "%Y-%m-%dT%H:%M:%S")
+	# Compute runtime for job in integer seconds
 	deltaT = (d3-d2).total_seconds()
+	# Compute waittime for job in int seconds
 	deltaWaitT.append((d2-d1).total_seconds()/3600.0)
 
+	# Search through users and find the index to write to in SU_users
 	flag = 0
 	for j in users:
 		if(j == data[i][5]):
 			break
 		flag += 1
-
+	
+	# Create an SU entry for job 'i'
 	SU.append(deltaT*int(data[i][4])/3600.0)
+	# Add into SU_users for user 'flag'
 	SU_users[flag] += deltaT*int(data[i][4])/3600.0
 
 print "There were %d jobs consuming a total of %f compute hours\n" % (len(data), np.sum(SU)) 
