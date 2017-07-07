@@ -62,11 +62,13 @@ for i in range(len(data)):
 		if(j == data[i][5]):
 			break
 		flag += 1
-	
-	# Create an SU entry for job 'i'
-	SU.append(deltaT*int(data[i][4])/3600.0)
-	# Add into SU_users for user 'flag'
-	SU_users[flag] += deltaT*int(data[i][4])/3600.0
+
+	# Throw away negative runtimes (Why do these exist, anyway?)
+	if(deltaT >= 0):
+		# Create an SU entry for job 'i'
+		SU.append(deltaT*int(data[i][4])/3600.0)
+		# Add into SU_users for user 'flag'
+		SU_users[flag] += deltaT*int(data[i][4])/3600.0
 
 print "There were %d jobs consuming a total of %f compute hours\n" % (len(data), np.sum(SU)) 
 print "The average wait time was %f hours and the median was %f hours\n\n" % (np.mean(deltaWaitT),np.median(deltaWaitT))
