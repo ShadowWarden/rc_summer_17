@@ -53,8 +53,6 @@ for i in range(len(data)):
 	d3 = datetime.strptime(data[i][3], "%Y-%m-%dT%H:%M:%S")
 	# Compute runtime for job in integer seconds
 	deltaT = (d3-d2).total_seconds()
-	# Compute waittime for job in int seconds
-	deltaWaitT.append((d2-d1).total_seconds()/3600.0)
 
 	# Search through users and find the index to write to in SU_users
 	flag = 0
@@ -69,6 +67,9 @@ for i in range(len(data)):
 		SU.append(deltaT*int(data[i][4])/3600.0)
 		# Add into SU_users for user 'flag'
 		SU_users[flag] += deltaT*int(data[i][4])/3600.0
+		# Compute waittime for job in int seconds
+		deltaWaitT.append((d2-d1).total_seconds()/3600.0)
+
 
 print "There were %d jobs consuming a total of %f compute hours\n" % (len(data), np.sum(SU)) 
 print "The average wait time was %f hours and the median was %f hours\n\n" % (np.mean(deltaWaitT),np.median(deltaWaitT))
